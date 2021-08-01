@@ -17,10 +17,18 @@ class Svg:
         return None
     
     def getInformations(self, root):
+        beacons = {}
+        points = {}
         for child in root:
-            if self.hasLabel(child):
-                if self.isBeacon(child):
-                    self.getBeaconPosition(child)
+            if self.hasLabel(child):   
+                if self.isBeacon(child):            
+                    info = self.getBeaconPosition(child)
+                    beacons[info[0]] = info[1]
+                elif self.isPoint(child):
+                    info = self.getPointPosition(child)
+                    points[info[0]] = info[1]
+        # print(beacons)
+        print(points.keys())
 
     def hasLabel(self, root):
         return "{http://www.inkscape.org/namespaces/inkscape}label" in root.attrib
@@ -28,16 +36,29 @@ class Svg:
     def isBeacon(self, root):
         return root.attrib["{http://www.inkscape.org/namespaces/inkscape}label"] == "beacon"
     
-    def getBeaconPosition(self, root):
+    def isPoint(self, root):
+        return root.attrib["{http://www.inkscape.org/namespaces/inkscape}label"] == "point"
+
+    def getBeaconPosition(self, root):        
         translate = self.getTranslate(root)
+        position = {}
         for child in root:
             if self.isText(child):
-                print(self.getId(child))
+                position["id"] = self.getId(child)
             elif self.isCircle(child):
                 pos = self.getPos(child)
                 finalPos = self.sumPos(translate, pos)
-                print(finalPos)
+                position["pos"] = finalPos
+        return position["id"], position["pos"]
     
+    def getPointPosition(self, root):
+        x = root.attrib["cx"]
+        y = root.attrib["cy"]
+
+        name = str(int(float(x))) + "_" + str(int(float(y)))
+        pos = (float(x), float(y))
+        return name, pos
+
     def isCircle(self, root):
         return root.tag == "{http://www.w3.org/2000/svg}circle"
     
